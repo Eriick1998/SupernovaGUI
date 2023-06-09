@@ -1,0 +1,2 @@
+# SupernovaGUI
+Interface for Supernova
