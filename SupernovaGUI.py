@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import requests
 
+
 class SupernovaChargerApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -16,14 +17,15 @@ class SupernovaChargerApp(tk.Tk):
         ttk.Label(self, text="Select Configuration").place(x=220, y=120)
         ttk.Label(self, text="Color / Brand").place(x=190, y=160)
         ttk.Label(self, text="Vector Configuration").place(x=440, y=40)
+        ttk.Label(self, text="PN Final: ").place(x=40, y=280)
 
         self.configs_entry = []
+        self.part_name = []
 
         self.create_entries()
         self.create_comboboxes()
         self.create_dynamic_labels()
         self.create_done_button()
-
 
         self.sn = ""  # Atributo sn
         self.pn = ""  # Atributo pn
@@ -31,44 +33,38 @@ class SupernovaChargerApp(tk.Tk):
 
 
     def create_entries(self):
-        font_size = 10  # Tamaño de la fuente
-        self.config_supernova = ["PRD", "PW1", "PW2", "MC2", "MD1","MD2",
-                            "MET", "OU1", "OU2", "PC1", "PC2","PMV",
-                            "ESB", "PVA", "IDV", "MC1", "RFV", "TMP",
-                            ] # Valores vector config
-        
-        label_list = [ttk.Label(self, 
+        font_size = 10
+        self.config_supernova = ["PRD", "PW1", "PW2", "OU1", "OU2", "MC1", "MC2", "MD1", "MD2",
+                                 "MET", "PC1", "PC2", "PMV", "ESB", "PVA", "IDV", "RFV", "TMP"]
+        label_list = [ttk.Label(self,
                                 text=self.config_supernova[e],
-                                font=("Arial", font_size)) 
-                                for e in range(len(self.config_supernova))
-                                ]
-        
+                                font=("Arial", font_size)) for e in range(len(self.config_supernova))]
 
         self.mensajes = {
-            label_list[0]: "Product: 1, 2",
-            label_list[1]: "Outlet max. power: 150, 60",
-            label_list[2]: "Outlet max. power: 150, 60",
-            label_list[3]: "Outlet max. current: 40, 15",
-            label_list[4]: "Outlet DC Meter: 0, 1",
-            label_list[5]: "Outlet DC Meter: 0, 1",
-            label_list[6]: "AC Meter: 0, 1, 2",
-            label_list[7]: "Outlet type: 0, 3, 4",
-            label_list[8]: "Outlet type: 0, 3, 4",
-            label_list[9]: "Outlet power config: 2",
-            label_list[10]: "Outlet power config: 2",
-            label_list[11]: "Power module version: 1, 2",
-            label_list[12]: "Emergency Stop Button: 0, 1",
-            label_list[13]: "Product variant: 0 Standar, 2 Split",
-            label_list[14]: "Isolation detector version: 0, 1",
-            label_list[15]: "Outlet max. current: 40, 15",
-            label_list[16]: "Refrigeration version: 0, 1, 2, 3",
-            label_list[17]: "Temperature Probes: 0, 1",
-            }
-        
+            label_list[0]: "Product:                        1: Supernova,   2: Supernova Gen_2,    3: Hypernova",
+            label_list[1]: "Outlet max. power:              150,            60",
+            label_list[2]: "Outlet max. power:              150,            60",
+            label_list[3]: "Outlet type:                    0: None,        3: CCS,     4: CHAdeMO",
+            label_list[4]: "Outlet type:                    0: None,        3: CCS,     4: CHAdeMO",
+            label_list[5]: "Outlet max. current:            40,             15",
+            label_list[6]: "Outlet max. current:            40,             15",
+            label_list[7]: "Outlet DC Meter:                0: None,        1: ACREL DSJF1352",
+            label_list[8]: "Outlet DC Meter:                0: None,        1: ACREL DSJF1352",
+            label_list[9]: "AC Meter:                       0: None,        1: Carlo Gavazzi,      2: Inepro",
+            label_list[10]: "Outlet power config:           2: DC",
+            label_list[11]: "Outlet power config:           2: DC",
+            label_list[12]: "Power module version:          1: QPM,     2: UUGreen CPM",
+            label_list[13]: "Emergency Stop Button:         0: Not installed    1: Latch",
+            label_list[14]: "Product variant:               0: Standar,      2: Split",
+            label_list[15]: "Isolation detector version:    0: Bender (isoGEN423,isoCHA425,isoCHA425HV) 1:Trafox",
+            label_list[16]: "Refrigeration version:         0, 1, 2, 3",
+            label_list[17]: "Temperature Probes:            0: None    1: 4 x NTC",
+        }
+
         x_pos, y_pos = 430, 70  # Inicializar las posiciones x e y
 
         for e in range(len(self.config_supernova)):
-            if e == (len(self.config_supernova))/2:
+            if e == (len(self.config_supernova)) / 2:
                 x_pos = 520
                 y_pos = 70
             label_list[e].pack()
@@ -80,7 +76,7 @@ class SupernovaChargerApp(tk.Tk):
         x_pos, y_pos = 470, 70
 
         for e in range(len(self.config_supernova)):
-            if e == (len(self.config_supernova))/2:
+            if e == (len(self.config_supernova)) / 2:
                 x_pos = 560
                 y_pos = 70
             valor_config = tk.StringVar()
@@ -90,7 +86,12 @@ class SupernovaChargerApp(tk.Tk):
             cuadro_config.bind("<KeyRelease>", self.capturar_seleccion)
             y_pos += 30
 
-        # Etiquetas de SW y SN
+        # Etiquetas de SW y SN y PN_final
+        self.valor_texto_3 = tk.StringVar()
+        self.cuadro_texto_3 = ttk.Entry(self, width=30, textvariable=self.valor_texto_3)
+        self.cuadro_texto_3.place(x=130, y=280)
+        self.cuadro_texto_3.bind("<KeyRelease>", self.capturar_seleccion)
+
         self.valor_texto_2 = tk.StringVar()
         self.cuadro_texto_2 = ttk.Entry(self, width=15, textvariable=self.valor_texto_2)
         self.cuadro_texto_2.place(x=130, y=230)
@@ -104,24 +105,26 @@ class SupernovaChargerApp(tk.Tk):
         self.mensaje_label = tk.Label(self, relief=tk.RAISED)
         self.mensaje_label.pack(fill=tk.X)
 
-        
-
     def create_comboboxes(self):
         self.combo = ttk.Combobox(self, state="readonly", values=["DCF1", "DCF2"], width=5)
         self.combo.place(x=130, y=40)
         self.combo.bind("<<ComboboxSelected>>", self.capturar_seleccion)
 
-        self.combo_2 = ttk.Combobox(self, state="readonly", values=["211", "212", "213", "214", "901", "902", "223", "225"], width=5)
+        self.combo_2 = ttk.Combobox(self, state="readonly",
+                                    values=["211", "212", "213", "214", "901", "902", "223", "225"], width=5)
         self.combo_2.place(x=130, y=80)
         self.combo_2.bind("<<ComboboxSelected>>", self.capturar_seleccion)
 
-        self.combo_3 = ttk.Combobox(self, state="readonly", values=["84600000", "84000000", "84E00000", "84080000", "84400000"], width=8)
+        self.combo_3 = ttk.Combobox(self, state="readonly",
+                                    values=["84600000", "84000000", "84E00000", "84080000", "84400000"], width=8)
         self.combo_3.place(x=130, y=120)
         self.combo_3.bind("<<ComboboxSelected>>", self.capturar_seleccion)
 
         self.combo_4 = ttk.Combobox(self, state="readonly", values=["WB1", "BC1", "WV2", "WV3"], width=5)
         self.combo_4.place(x=130, y=160)
         self.combo_4.bind("<<ComboboxSelected>>", self.capturar_seleccion)
+
+
 
     def create_dynamic_labels(self):
         self.etiqueta_generacion = ttk.Label(self, text="Select Supernova")
@@ -145,6 +148,7 @@ class SupernovaChargerApp(tk.Tk):
         self.sn = self.valor_texto.get()
         self.sw = self.valor_texto_2.get()
         self.pn = f'{valor_1}-{valor_2}-{valor_3}-{valor_4}-00-00-00'
+        self.valor_texto_3.set(self.pn)
 
         if valor_1 == "DCF1":
             self.etiqueta_generacion.config(text="60 Kw")
@@ -182,7 +186,7 @@ class SupernovaChargerApp(tk.Tk):
         self.mensaje_label.config(text="")
 
     def mostrar_resultado(self):
-        self.values = [ self.configs_entry[e].get() for e in range(len(self.configs_entry))]
+        self.values = [self.configs_entry[e].get() for e in range(len(self.configs_entry))]
         dic_vec_config = dict(zip(self.config_supernova, self.values))
         diccionario_sin_vacios = {clave: valor for clave, valor in dic_vec_config.items() if valor != ""}
         url = "http://localhost:10003/data"
@@ -193,7 +197,7 @@ class SupernovaChargerApp(tk.Tk):
             "sw": self.sw,
             "conf_vector": diccionario_sin_vacios,
             "customerConfig": {}
-            }
+        }
 
         response = requests.post(url, headers=headers, json=data)
         print(response.status_code)
