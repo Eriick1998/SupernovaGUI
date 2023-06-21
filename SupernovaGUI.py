@@ -1,22 +1,24 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import requests
 
 
 class SupernovaChargerApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Supernova Charger")
-        self.geometry("640x400")
+        self.title("Supernova Charger V1.1.0")
+        self.geometry("880x400")
+        self.url = ""
 
         # Etiquetas
         ttk.Label(self, text="Part number:").place(x=40, y=40)
         ttk.Label(self, text="SW:").place(x=40, y=230)
         ttk.Label(self, text="Serial:").place(x=40, y=200)
         ttk.Label(self, text="Select Type").place(x=190, y=80)
-        ttk.Label(self, text="Select Configuration").place(x=220, y=120)
+        ttk.Label(self, text="Select Config").place(x=220, y=120)
         ttk.Label(self, text="Color / Brand").place(x=190, y=160)
-        ttk.Label(self, text="Vector Configuration").place(x=440, y=40)
+        ttk.Label(self, text="Vector Configuration").place(x=650, y=40)
         ttk.Label(self, text="PN Final: ").place(x=40, y=280)
 
         self.configs_entry = []
@@ -61,11 +63,11 @@ class SupernovaChargerApp(tk.Tk):
             label_list[17]: "Temperature Probes:            0: None    1: 4 x NTC",
         }
 
-        x_pos, y_pos = 430, 70  # Inicializar las posiciones x e y
+        x_pos, y_pos = 650, 70  # Inicializar las posiciones x e y
 
         for e in range(len(self.config_supernova)):
             if e == (len(self.config_supernova)) / 2:
-                x_pos = 520
+                x_pos = 720
                 y_pos = 70
             label_list[e].pack()
             label_list[e].place(x=x_pos, y=y_pos)
@@ -73,11 +75,11 @@ class SupernovaChargerApp(tk.Tk):
             label_list[e].bind("<Enter>", self.mostrar_informacion)
             label_list[e].bind("<Leave>", self.ocultar_informacion)
 
-        x_pos, y_pos = 470, 70
+        x_pos, y_pos = 690, 70
 
         for e in range(len(self.config_supernova)):
             if e == (len(self.config_supernova)) / 2:
-                x_pos = 560
+                x_pos = 760
                 y_pos = 70
             valor_config = tk.StringVar()
             self.configs_entry.append(valor_config)
@@ -111,12 +113,15 @@ class SupernovaChargerApp(tk.Tk):
         self.combo.bind("<<ComboboxSelected>>", self.capturar_seleccion)
 
         self.combo_2 = ttk.Combobox(self, state="readonly",
-                                    values=["211", "212", "213", "214", "901", "902", "223", "225"], width=5)
+                                    values=["207", "208", "211", "212", "213", "214", "222", "223", "224", "225", "901",
+                                            "902"], width=5)
         self.combo_2.place(x=130, y=80)
         self.combo_2.bind("<<ComboboxSelected>>", self.capturar_seleccion)
 
         self.combo_3 = ttk.Combobox(self, state="readonly",
-                                    values=["84600000", "84000000", "84E00000", "84080000", "84400000"], width=8)
+                                    values=["84000000", "84100000", "84400000", "84600000", "84680000", "84700000",
+                                            "84800000", "84880000", "84E00000", "84E80000", "84F00000", "84900000",
+                                            "84080000", "00000001"], width=9)
         self.combo_3.place(x=130, y=120)
         self.combo_3.bind("<<ComboboxSelected>>", self.capturar_seleccion)
 
@@ -133,11 +138,31 @@ class SupernovaChargerApp(tk.Tk):
         self.etiqueta_type = ttk.Label(self, text="Select Type")
         self.etiqueta_type.place(x=190, y=80)
 
-        self.etiqueta_config = ttk.Label(self, text="Select Configuration")
+        self.etiqueta_config = ttk.Label(self, text="Select Config")
         self.etiqueta_config.place(x=220, y=120)
 
     def create_done_button(self):
         ttk.Button(self, text="Done", command=self.mostrar_resultado, style="Green.TButton").place(x=295, y=350)
+
+    def default_values(self):
+        self.configs_entry[0].set("1")
+        self.configs_entry[1].set("60")
+        self.configs_entry[2].set("60")
+        self.configs_entry[3].set("3")
+        self.configs_entry[4].set("4")
+        self.configs_entry[5].set("15")
+        self.configs_entry[6].set("15")
+        self.configs_entry[7].set("0")
+        self.configs_entry[8].set("0")
+        self.configs_entry[9].set("2")
+        self.configs_entry[10].set("2")
+        self.configs_entry[11].set("2")
+        self.configs_entry[12].set("1")
+        self.configs_entry[13].set("0")
+        self.configs_entry[14].set("0")
+        self.configs_entry[15].set("0")
+        self.configs_entry[16].set("0")
+        self.configs_entry[17].set("0")
 
     def capturar_seleccion(self, event):
         valor_1 = self.combo.get()
@@ -149,33 +174,138 @@ class SupernovaChargerApp(tk.Tk):
         self.sw = self.valor_texto_2.get()
         self.pn = f'{valor_1}-{valor_2}-{valor_3}-{valor_4}-00-00-00'
         self.valor_texto_3.set(self.pn)
+        self.default_values()
 
         if valor_1 == "DCF1":
             self.etiqueta_generacion.config(text="60 Kw")
+            self.configs_entry[0].set("1")
+            self.configs_entry[12].set("1")
         elif valor_1 == "DCF2":
             self.etiqueta_generacion.config(text="150 Kw")
+            self.configs_entry[0].set("2")
+            self.configs_entry[12].set("2")
 
-        if valor_2 in ["212", "225"]:
-            self.etiqueta_type.config(text="CCS-CCS 5m")
-        elif valor_2 in ["211", "223"]:
-            self.etiqueta_type.config(text="CCS-CCS 3m")
-        elif valor_2 in ["901", "902"]:
-            self.etiqueta_type.config(text="CCS-CHADEMO 3.8m")
-        elif valor_2 == "213":
-            self.etiqueta_type.config(text="CCS-CHADEMO 3m")
-        elif valor_2 == "214":
-            self.etiqueta_type.config(text="CCS-CHADEMO 5m")
+        if valor_2 in ["207"]:
+            self.etiqueta_type.config(text="CCS-CCS 3m 30Kw")
+            self.configs_entry[1].set("30")
+            self.configs_entry[2].set("30")
+            self.configs_entry[4].set("3")
+        elif valor_2 in ["208"]:
+            self.etiqueta_type.config(text="CCS-CCS 5m 30Kw")
+            self.configs_entry[1].set("30")
+            self.configs_entry[2].set("30")
+            self.configs_entry[4].set("3")
+        elif valor_2 in ["211"]:
+            self.etiqueta_type.config(text="CCS-CCS 3m 60Kw")
+            self.configs_entry[4].set("3")
+        elif valor_2 in ["212"]:
+            self.etiqueta_type.config(text="CCS-CCS 5m 60Kw")
+            self.configs_entry[4].set("3")
+        elif valor_2 in ["213"]:
+            self.etiqueta_type.config(text="CCS-CHADEMO 3m 60Kw")
+        elif valor_2 in ["214"]:
+            self.etiqueta_type.config(text="CCS-CHADEMO 5m 60Kw")
+        elif valor_2 in ["222"]:
+            self.etiqueta_type.config(text="CCS-CCS 3m, 150Kw, 250A")
+            self.configs_entry[1].set("150")
+            self.configs_entry[2].set("150")
+            self.configs_entry[4].set("3")
+            self.configs_entry[5].set("25")
+            self.configs_entry[6].set("25")
+        elif valor_2 in ["223"]:
+            self.etiqueta_type.config(text="CCS-CCS 3m, 150Kw, 400A")
+            self.configs_entry[1].set("150")
+            self.configs_entry[2].set("150")
+            self.configs_entry[4].set("3")
+            self.configs_entry[5].set("40")
+            self.configs_entry[6].set("40")
+        elif valor_2 in ["224"]:
+            self.etiqueta_type.config(text="CCS-CCS 5m, 150Kw, 250A")
+            self.configs_entry[1].set("150")
+            self.configs_entry[2].set("150")
+            self.configs_entry[4].set("3")
+            self.configs_entry[5].set("25")
+            self.configs_entry[6].set("25")
+        elif valor_2 in ["225"]:
+            self.etiqueta_type.config(text="CCS-CCS 5m, 150Kw, 400A")
+            self.configs_entry[1].set("150")
+            self.configs_entry[2].set("150")
+            self.configs_entry[4].set("3")
+            self.configs_entry[5].set("40")
+            self.configs_entry[6].set("40")
+        elif valor_2 in ["901"]:
+            self.etiqueta_type.config(text="CCS-CHADEMO, 3.8m, 60Kw")
+        elif valor_2 in ["902"]:
+            self.etiqueta_type.config(text="CCS-CHADEMO, 3.8m, 50Kw")
+            self.configs_entry[1].set("50")
+            self.configs_entry[2].set("50")
 
-        if valor_3 == "84600000":
-            self.etiqueta_config.config(text="Split + 4G + DC + AC")
-        elif valor_3 == "84000000":
-            self.etiqueta_config.config(text="4G + AC MID")
+
+        if valor_3 == "84000000":
+            self.etiqueta_config.config(text="AC MID + 4G")
+        elif valor_3 == "84100000":
+            self.etiqueta_config.config(text="AC MID + 4G + Payter Apollo C2C")
+        elif valor_3 == "84400000":
+            self.etiqueta_config.config(text=" Split                ")
+            self.configs_entry[14].set("2")
+        elif valor_3 == "84600000":
+            self.etiqueta_config.config(text="AC MID + DC meters + 4G + Split")
+            self.configs_entry[7].set("1")
+            self.configs_entry[8].set("1")
+            self.configs_entry[14].set("2")
+        elif valor_3 == "84680000":
+            self.etiqueta_config.config(text="AC MID + DC meters + 4G + Split + Payter P66")
+            self.configs_entry[7].set("1")
+            self.configs_entry[8].set("1")
+            self.configs_entry[13].set("1")
+            self.configs_entry[14].set("2")
+        elif valor_3 == "84700000":
+            self.etiqueta_config.config(text="AC MID + DC meters + 4G + Split + Payter Apollo C2C")
+            self.configs_entry[7].set("1")
+            self.configs_entry[8].set("1")
+            self.configs_entry[14].set("2")
+        elif valor_3 == "84800000":
+            self.etiqueta_config.config(text="AC MID + 4G + ESB")
+            self.configs_entry[13].set("1")
+        elif valor_3 == "84880000":
+            self.etiqueta_config.config(text="AC MID + 4G + Payter P66 + ESB")
+            self.configs_entry[13].set("1")
         elif valor_3 == "84E00000":
-            self.etiqueta_config.config(text="Split + Emergency Button")
+            self.etiqueta_config.config(text="AC MID + DC meters + 4G + Split + ESB")
+            self.configs_entry[7].set("1")
+            self.configs_entry[8].set("1")
+            self.configs_entry[13].set("1")
+            self.configs_entry[14].set("2")
+        elif valor_3 == "84E80000":
+            self.etiqueta_config.config(text="AC MID + DC meters + 4G + Split + Payter P66 + ESB")
+            self.configs_entry[7].set("1")
+            self.configs_entry[8].set("1")
+            self.configs_entry[13].set("1")
+            self.configs_entry[14].set("2")
+        elif valor_3 == "84F00000":
+            self.etiqueta_config.config(text="AC MID + DC meters + 4G + Split + Payter Apollo C2C + ESB")
+            self.configs_entry[7].set("1")
+            self.configs_entry[8].set("1")
+            self.configs_entry[13].set("1")
+            self.configs_entry[14].set("2")
+        elif valor_3 == "84900000":
+            self.etiqueta_config.config(text="AC MID + 4G + Payter Apollo C2C + ESB")
+            self.configs_entry[13].set("1")
+        elif valor_3 == "84080000":
+            self.etiqueta_config.config(text="AC MID Meter + 4G + Payter P66")
+        elif valor_3 == "00000001":
+            self.etiqueta_config.config(text="Dummy (can not charge a vehicle)")
+        elif valor_3 == "84E00000":
+            self.etiqueta_config.config(text="Split + ESB")
+            self.configs_entry[7].set("1")
+            self.configs_entry[8].set("1")
+            self.configs_entry[13].set("1")
+            self.configs_entry[14].set("2")
         elif valor_3 == "84080000":
             self.etiqueta_config.config(text="Payter P66 + 4G + AC MID")
         elif valor_3 == "84400000":
             self.etiqueta_config.config(text="Split + 4G + AC MID")
+            self.configs_entry[14].set("2")
 
     def mostrar_informacion(self, event):
         elemento = event.widget
@@ -189,19 +319,23 @@ class SupernovaChargerApp(tk.Tk):
         self.values = [self.configs_entry[e].get() for e in range(len(self.configs_entry))]
         dic_vec_config = dict(zip(self.config_supernova, self.values))
         diccionario_sin_vacios = {clave: valor for clave, valor in dic_vec_config.items() if valor != ""}
-        url = "http://localhost:10003/data"
-        headers = {"Content-Type": "application/json"}
-        data = {
-            "sn": self.sn,
-            "pn": self.pn,
-            "sw": self.sw,
-            "conf_vector": diccionario_sin_vacios,
-            "customerConfig": {}
-        }
 
-        response = requests.post(url, headers=headers, json=data)
-        print(response.status_code)
-        print(response.json())
+        if "" in dic_vec_config.values():
+            messagebox.showwarning("Alerta", "¡Hay valores vacíos en el Hardware Vector, p*to!")
+        else:
+            self.url = "http://localhost:10003/data"
+            headers = {"Content-Type": "application/json"}
+            data = {
+                "sn": self.sn,
+                "pn": self.pn,
+                "sw": self.sw,
+                "conf_vector": diccionario_sin_vacios,
+                "customerConfig": {}
+            }
+
+            response = requests.post(self.url, headers=headers, json=data)
+            print(response.status_code)
+            print(response.json())
 
 
 if __name__ == "__main__":
